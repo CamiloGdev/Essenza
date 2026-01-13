@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react'
 import { UploadProgress } from './UploadProgress'
 import { FileUploadSkeleton, ReportsTableSkeleton } from './skeletons'
+import { ErrorBoundary } from './ErrorBoundary'
 
 const FileUpload = lazy(() => import('./FileUpload').then((module) => ({ default: module.FileUpload })))
 
@@ -22,15 +23,19 @@ export function Dashboard() {
         </div>
 
         <div className="space-y-6">
+          <ErrorBoundary>
             <Suspense fallback={<FileUploadSkeleton />}>
               <FileUpload />
             </Suspense>
+          </ErrorBoundary>
 
           <UploadProgress />
 
+          <ErrorBoundary>
             <Suspense fallback={<ReportsTableSkeleton />}>
               <ReportsTable />
             </Suspense>
+          </ErrorBoundary>
         </div>
       </main>
     </div>
