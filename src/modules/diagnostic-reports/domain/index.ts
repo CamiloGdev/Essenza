@@ -58,3 +58,5 @@ export {
   getFileTypeValidationStrategy,
   validateFileWithStrategy,
 } from './strategies'
+
+export { type FilterCriteria, type FilterResult, createEmptyFilterCriteria, isFilterActive } from './FilterCriteria'
