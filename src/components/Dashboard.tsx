@@ -1,6 +1,10 @@
-import { FileUpload } from './FileUpload'
+import { Suspense, lazy } from 'react'
 import { UploadProgress } from './UploadProgress'
-import { ReportsTable } from './ReportsTable'
+import { FileUploadSkeleton, ReportsTableSkeleton } from './skeletons'
+
+const FileUpload = lazy(() => import('./FileUpload').then((module) => ({ default: module.FileUpload })))
+
+const ReportsTable = lazy(() => import('./ReportsTable').then((module) => ({ default: module.ReportsTable })))
 
 export function Dashboard() {
   return (
@@ -18,9 +22,15 @@ export function Dashboard() {
         </div>
 
         <div className="space-y-6">
-          <FileUpload />
+            <Suspense fallback={<FileUploadSkeleton />}>
+              <FileUpload />
+            </Suspense>
+
           <UploadProgress />
-          <ReportsTable />
+
+            <Suspense fallback={<ReportsTableSkeleton />}>
+              <ReportsTable />
+            </Suspense>
         </div>
       </main>
     </div>
