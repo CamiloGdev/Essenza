@@ -2,11 +2,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Filter, ArrowDownToLine, Loader2 } from 'lucide-react'
+import { Filter, ArrowDownToLine, Loader2, Search, X } from 'lucide-react'
 import { EmptyState } from './EmptyState'
 import { getFileTypePresentationStrategy } from './strategies'
-import { useDiagnosticReportsQuery } from '@/modules/diagnostic-reports/infrastructure'
-import { formatFileSize } from '@/modules/diagnostic-reports/domain'
+import { useDiagnosticReportsQuery, useFilteredReports } from '@/modules/diagnostic-reports/infrastructure'
+import { formatFileSize, isFilterActive } from '@/modules/diagnostic-reports/domain'
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString)
@@ -19,6 +19,12 @@ function formatDate(dateString: string): string {
 
 export function ReportsTable() {
   const { data: reports, isLoading, error } = useDiagnosticReportsQuery()
+
+  const { filteredReports, filterCriteria, setSearchText, isFiltering, totalCount, filteredCount } = useFilteredReports(
+    { reports },
+  )
+
+  const hasActiveFilter = isFilterActive(filterCriteria)
 
   if (isLoading) {
     return (
@@ -45,7 +51,30 @@ export function ReportsTable() {
   return (
     <Card>
       <div className="p-4 border-b flex flex-col sm:flex-row gap-4">
-        <Input placeholder="Search files..." className="max-w-sm" disabled />
+        <div className="relative max-w-sm flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search files..."
+            className="pl-9 pr-9"
+            value={filterCriteria.searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            aria-label="Search diagnostic reports"
+          />
+          {hasActiveFilter && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+              onClick={() => setSearchText('')}
+              aria-label="Clear search"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+          {isFiltering && (
+            <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+          )}
+        </div>
         <div className="flex gap-2 ml-auto">
           <Button variant="outline" disabled>
             <Filter className="h-4 w-4 mr-2" />
@@ -58,8 +87,17 @@ export function ReportsTable() {
         </div>
       </div>
 
-      {!reports || reports.length === 0 ? (
-        <EmptyState />
+      {filteredReports.length === 0 ? (
+        hasActiveFilter ? (
+          <div className="p-8 text-center">
+            <p className="text-muted-foreground">No reports match your search criteria.</p>
+            <Button variant="link" onClick={() => setSearchText('')} className="mt-2">
+              Clear search
+            </Button>
+          </div>
+        ) : (
+          <EmptyState />
+        )
       ) : (
         <>
           <Table>
@@ -73,7 +111,7 @@ export function ReportsTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {reports.map((report) => {
+              {filteredReports.map((report) => {
                 const presentationStrategy = getFileTypePresentationStrategy(report.extension)
                 const IconComponent = presentationStrategy.icon
 
@@ -96,7 +134,9 @@ export function ReportsTable() {
 
           <div className="p-4 border-t flex items-center justify-between text-sm text-muted-foreground">
             <span>
-              Showing 1-{reports.length} of {reports.length} results
+              {hasActiveFilter
+                ? `Showing ${filteredCount} of ${totalCount} results`
+                : `Showing 1-${totalCount} of ${totalCount} results`}
             </span>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" disabled>
