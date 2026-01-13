@@ -1,19 +1,21 @@
+import { QueryClientProvider } from '@tanstack/react-query'
 import { ThemeProvider } from '@/components/theme-provider'
 import { ModeToggle } from '@/components/mode-toggle'
-import { Button } from '@/components/ui/button'
+import { Dashboard } from '@/components'
+import { Toaster } from '@/components/ui/sonner'
+import { queryClient } from '@/lib/query-client'
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4">
-        <div className="absolute top-4 right-4">
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+        <div className="absolute top-4 right-4 z-50">
           <ModeToggle />
         </div>
-        <h1 className="text-4xl font-bold">Essenza</h1>
-        <p className="text-muted-foreground">Vite + React + Shadcn/ui + Tailwind</p>
-        <Button>Click me</Button>
-      </div>
-    </ThemeProvider>
+        <Dashboard />
+        <Toaster richColors position="bottom-right" />
+      </ThemeProvider>
+    </QueryClientProvider>
   )
 }
 
