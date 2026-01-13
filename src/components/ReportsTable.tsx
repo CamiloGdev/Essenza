@@ -1,27 +1,12 @@
-import { FileText, FileSpreadsheet, FileCode, File } from 'lucide-react'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Filter, ArrowDownToLine } from 'lucide-react'
+import { Filter, ArrowDownToLine, Loader2 } from 'lucide-react'
 import { EmptyState } from './EmptyState'
+import { getFileTypePresentationStrategy } from './strategies'
 import { useDiagnosticReportsQuery } from '@/modules/diagnostic-reports/infrastructure'
-import { formatFileSize, type AllowedFileExtension } from '@/modules/diagnostic-reports/domain'
-import { Loader2 } from 'lucide-react'
-
-const FILE_ICONS: Record<AllowedFileExtension, typeof FileText> = {
-  pdf: FileText,
-  csv: FileSpreadsheet,
-  xml: FileCode,
-  txt: File,
-}
-
-const FILE_ICON_COLORS: Record<AllowedFileExtension, string> = {
-  pdf: 'text-red-500',
-  csv: 'text-green-500',
-  xml: 'text-orange-500',
-  txt: 'text-blue-500',
-}
+import { formatFileSize } from '@/modules/diagnostic-reports/domain'
 
 function formatDate(dateString: string): string {
   const date = new Date(dateString)
@@ -89,13 +74,13 @@ export function ReportsTable() {
             </TableHeader>
             <TableBody>
               {reports.map((report) => {
-                const IconComponent = FILE_ICONS[report.extension]
-                const iconColor = FILE_ICON_COLORS[report.extension]
+                const presentationStrategy = getFileTypePresentationStrategy(report.extension)
+                const IconComponent = presentationStrategy.icon
 
                 return (
                   <TableRow key={report.id}>
                     <TableCell>
-                      <IconComponent className={`h-5 w-5 ${iconColor}`} />
+                      <IconComponent className={`h-5 w-5 ${presentationStrategy.colorClass}`} />
                     </TableCell>
                     <TableCell className="font-medium">
                       {report.name}.{report.extension}

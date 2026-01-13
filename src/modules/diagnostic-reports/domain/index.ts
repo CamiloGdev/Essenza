@@ -51,3 +51,10 @@ export {
   createDiagnosticReportDate,
   formatDiagnosticReportDate,
 } from './DiagnosticReportDate'
+
+export {
+  type FileTypeValidationStrategy,
+  type ValidationResult,
+  getFileTypeValidationStrategy,
+  validateFileWithStrategy,
+} from './strategies'
